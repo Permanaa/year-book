@@ -9,7 +9,7 @@ function classNames(...classes: string[]) {
 }
 
 const Header = () => {
-  const { data: session, status } = useSession();
+  const { data: session } = useSession();
   return (
     <header className="sticky top-0">
       <div className="py-4 px-3 max-w-5xl mx-auto">
