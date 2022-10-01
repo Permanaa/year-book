@@ -12,7 +12,7 @@ const Header = () => {
   const { data: session } = useSession();
   return (
     <header className="sticky top-0">
-      <div className="py-4 px-3 max-w-5xl mx-auto">
+      <div className="py-4 px-4 max-w-5xl mx-auto">
         <div className="flex items-center justify-between">
           <Link href="/" passHref>
             <a>

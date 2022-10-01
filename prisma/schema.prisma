@@ -64,3 +64,11 @@ model VerificationToken {
 
     @@unique([identifier, token])
 }
+
+model Alumni {
+    id              String       @id @default(cuid())
+    generation      Int
+    graduation_year DateTime?
+    school_year     DateTime?
+    slug            String
+}
