@@ -66,9 +66,27 @@ model VerificationToken {
 }
 
 model Alumni {
-    id              String       @id @default(cuid())
+    id              String  @id @default(cuid())
     generation      Int
-    graduation_year DateTime?
-    school_year     DateTime?
-    slug            String
+    graduation_year String
+    school_year     String
+    slug            String  @unique
+    class           Class[]
+}
+
+model Major {
+    id              String  @id @default(cuid())
+    name            String
+    short_name      String  @unique
+    class           Class[]
+}
+
+model Class {
+    id              String  @id @default(cuid())
+    name            String
+    slug            String  @unique
+    majorId         String
+    alumniId        String
+    major           Major   @relation(fields: [majorId], references: [id])
+    alumni          Alumni  @relation(fields: [alumniId], references: [id])
 }
