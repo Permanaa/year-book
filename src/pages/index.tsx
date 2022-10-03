@@ -1,8 +1,27 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import Header from "@components/Header";
 import { trpc } from "@utils/trpc";
 import Link from "next/link";
+import superjson from "superjson";
+import { createContextInner } from "@server/router/context";
+import { createSSGHelpers } from "@trpc/react/ssg";
+import { appRouter } from "@server/router";
+
+export async function getServerSideProps() {
+  const ssg = createSSGHelpers({
+    router: appRouter,
+    ctx: await createContextInner(),
+    transformer: superjson,
+  });
+
+  await ssg.prefetchQuery("alumni.getAll");
+
+  return {
+    props: {
+      trpcState: ssg.dehydrate(),
+    }
+  }
+}
 
 const Home: NextPage = () => {
   const { data, isLoading } = trpc.useQuery(["alumni.getAll"]);
@@ -16,7 +35,6 @@ const Home: NextPage = () => {
       </Head>
 
       <main className="pb-8">
-        <Header />
 
         <div className="flex justify-center text-center max-w-xs mx-auto my-40 h-3/4 md:my-48 md:max-w-5xl">
           <h1 className="flex flex-col gap-4 text-5xl font-bold text-slate-700 md:text-7xl">
@@ -43,7 +61,7 @@ const Home: NextPage = () => {
                 <a>
                   <div className="relative flex-1 p-4 h-28 rounded-lg bg-slate-100 cursor-pointer hover:bg-red-50">
                     <p className="text-2xl font-bold text-slate-700">
-                      Alumni {item.generation}
+                      {`Alumni ${item.generation}`}
                     </p>
                     <p className="text-base text-slate-500">
                       {`${item.school_year} - ${item.graduation_year}`}
