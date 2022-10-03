@@ -8,6 +8,11 @@ import { Dialog, Transition } from "@headlessui/react";
 import { useDisclosure } from "@utils/useDisclosure";
 import { Fragment, useRef } from "react";
 import moment from "moment";
+import superjson from "superjson";
+import { createContextInner } from "@server/router/context";
+import { createSSGHelpers } from "@trpc/react/ssg";
+import { appRouter } from "@server/router";
+import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
 
 const PhoneIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
@@ -39,8 +44,6 @@ const StudentItem = (props: Student) => {
   const birthDate = date_of_birth
     ? moment(date_of_birth).format("DD MMMM YYYY")
     : "";
-
-  console.log(place_of_birth)
 
   const infoDisplay = [
     { value: name, label: "Nama" },
@@ -175,12 +178,14 @@ const StudentItem = (props: Student) => {
   );
 };
 
-const StudentList: NextPage = () => {
-  const router = useRouter();
+const StudentList: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
+  props
+) => {
+  const { slug } = props
 
   const { data, isLoading } = trpc.useQuery([
     "class.getBySlug",
-    { slug: router.asPath.slice(1) }
+    { slug }
   ]);
 
   return (
@@ -218,5 +223,32 @@ const StudentList: NextPage = () => {
     </>
   );
 };
+
+export async function getServerSideProps(
+  context: GetServerSidePropsContext<{ alumni: string, classroom: string }>,
+) {
+  const ssg = createSSGHelpers({
+    router: appRouter,
+    ctx: await createContextInner(),
+    transformer: superjson,
+  });
+
+  const alumni = context.params?.alumni || "";
+  const classroom = context.params?.classroom || "";
+
+  const slug =`${alumni}/${classroom}`;
+
+  await ssg.prefetchQuery(
+    "class.getBySlug",
+    { slug }
+  );
+
+  return {
+    props: {
+      trpcState: ssg.dehydrate(),
+      slug,
+    }
+  }
+}
 
 export default StudentList;

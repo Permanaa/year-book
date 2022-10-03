@@ -1,20 +1,25 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { useRouter } from "next/router";
 import { trpc } from "@utils/trpc";
 import { Tab } from "@headlessui/react";
 import { Fragment } from "react";
 import Link from "next/link";
+import superjson from "superjson";
+import { createContextInner } from "@server/router/context";
+import { createSSGHelpers } from "@trpc/react/ssg";
+import { appRouter } from "@server/router";
+import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
 
-const ClassList: NextPage = () => {
-  const router = useRouter();
-  const { alumni } = router.query;
+const ClassList: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
+  props,
+) => {
+  const { alumni } = props;
 
-  const alumniTitle = `${alumni?.toString().charAt(0).toUpperCase()}${alumni?.toString().slice(1).replace("-", " ")}`;
+  const alumniTitle = `${alumni.charAt(0).toUpperCase()}${alumni.slice(1).replace("-", " ")}`;
 
   const { data: dataMajor, isLoading: loadingMajor } = trpc.useQuery([
     "major.getAllByAlumni",
-    { alumni: alumni ? alumni?.toString() : "" }
+    { alumni }
   ]);
 
   return (
@@ -102,5 +107,29 @@ const ClassList: NextPage = () => {
     </>
   );
 };
+
+export async function getServerSideProps(
+  context: GetServerSidePropsContext<{ alumni: string }>,
+) {
+  const ssg = createSSGHelpers({
+    router: appRouter,
+    ctx: await createContextInner(),
+    transformer: superjson,
+  });
+
+  const alumni = context.params?.alumni || ""
+
+  await ssg.prefetchQuery(
+    "major.getAllByAlumni",
+    { alumni: alumni ? alumni : "" }
+  );
+
+  return {
+    props: {
+      trpcState: ssg.dehydrate(),
+      alumni,
+    }
+  }
+}
 
 export default ClassList;

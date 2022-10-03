@@ -7,22 +7,6 @@ import { createContextInner } from "@server/router/context";
 import { createSSGHelpers } from "@trpc/react/ssg";
 import { appRouter } from "@server/router";
 
-export async function getServerSideProps() {
-  const ssg = createSSGHelpers({
-    router: appRouter,
-    ctx: await createContextInner(),
-    transformer: superjson,
-  });
-
-  await ssg.prefetchQuery("alumni.getAll");
-
-  return {
-    props: {
-      trpcState: ssg.dehydrate(),
-    }
-  }
-}
-
 const Home: NextPage = () => {
   const { data, isLoading } = trpc.useQuery(["alumni.getAll"]);
 
@@ -82,5 +66,21 @@ const Home: NextPage = () => {
     </>
   );
 };
+
+export async function getServerSideProps() {
+  const ssg = createSSGHelpers({
+    router: appRouter,
+    ctx: await createContextInner(),
+    transformer: superjson,
+  });
+
+  await ssg.prefetchQuery("alumni.getAll");
+
+  return {
+    props: {
+      trpcState: ssg.dehydrate(),
+    }
+  }
+}
 
 export default Home;

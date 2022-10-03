@@ -6,7 +6,7 @@ interface ImageWithFallbackProps extends ImageProps {
 }
 
 const ImageWithFallback = (props: ImageWithFallbackProps) => {
-  const { src, fallbackSrc, alt, ...rest } = props;
+  const { src, fallbackSrc = "/images/no-image.jpg", alt, ...rest } = props;
   const [imgSrc, setImgSrc] = useState(src);
 
   return (
