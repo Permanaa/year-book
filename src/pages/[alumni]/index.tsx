@@ -1,6 +1,5 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import Header from "@components/Header";
 import { useRouter } from "next/router";
 import { trpc } from "@utils/trpc";
 import { Tab } from "@headlessui/react";
@@ -24,8 +23,7 @@ const ClassList: NextPage = () => {
         <title>{alumni && alumniTitle}</title>
       </Head>
 
-      <main>
-        <Header />
+      <main className="pb-8">
 
         <div className="flex justify-center text-center max-w-xs mx-auto my-40 h-3/4 md:my-48 md:max-w-5xl relative">
           <h1 className="flex flex-col gap-4 text-5xl font-bold text-slate-700 md:text-7xl relative">
@@ -35,11 +33,11 @@ const ClassList: NextPage = () => {
 
         <div className="max-w-5xl mx-auto px-4">
           <Tab.Group>
-            <Tab.List className="grid grid-cols-3 my-12 gap-4 bg-red-500 max-w-md mx-auto p-1 h-12 rounded-xl relative md:mb-24">
+            <Tab.List className="grid grid-cols-3 my-12 gap-4 bg-red-500 max-w-md mx-auto p-1 h-12 rounded-xl relative">
 
               {loadingMajor && new Array(3).fill("").map((_, idx) => (
                 <div key={idx} className="animate-pulse h-full flex-1 flex justify-center items-center">
-                  <div className="animation-pulse h-4 bg-slate-300 rounded w-10"></div>
+                  <div className="animation-pulse h-4 bg-slate-200 rounded w-10"></div>
                 </div>
               ))}
 
@@ -49,7 +47,7 @@ const ClassList: NextPage = () => {
                     <button
                       className={
                         selected
-                          ? "bg-white text-slate-500 rounded-lg font-bold focus:outline-none"
+                          ? "bg-white text-slate-600 rounded-lg font-bold focus:outline-none"
                           : "text-white font-bold"
                       }
                     >

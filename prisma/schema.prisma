@@ -66,27 +66,50 @@ model VerificationToken {
 }
 
 model Alumni {
-    id              String  @id @default(cuid())
+    id              String      @id @default(cuid())
     generation      Int
     graduation_year String
     school_year     String
-    slug            String  @unique
+    slug            String      @unique
     class           Class[]
+    student         Student[]
 }
 
 model Major {
-    id              String  @id @default(cuid())
+    id              String      @id @default(cuid())
     name            String
-    short_name      String  @unique
+    short_name      String      @unique
     class           Class[]
+    student         Student[]
 }
 
 model Class {
-    id              String  @id @default(cuid())
+    id              String      @id @default(cuid())
     name            String
-    slug            String  @unique
+    slug            String      @unique
     majorId         String
     alumniId        String
-    major           Major   @relation(fields: [majorId], references: [id])
-    alumni          Alumni  @relation(fields: [alumniId], references: [id])
+    major           Major       @relation(fields: [majorId], references: [id], onDelete: Cascade)
+    alumni          Alumni      @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+    student         Student[]
+}
+
+model Student {
+    id              String      @id @default(cuid())
+    name            String
+    address         String?
+    date_of_birth   DateTime?   @db.Date
+    place_of_birth  String?
+    image           String?
+    words           String?
+    instagram       String?
+    whatsapp        String?
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    alumniId        String
+    majorId         String
+    classId         String
+    alumni          Alumni      @relation(fields: [alumniId], references: [id], onDelete: Cascade)
+    major           Major       @relation(fields: [majorId], references: [id], onDelete: Cascade)
+    class           Class       @relation(fields: [classId], references: [id], onDelete: Cascade)
 }

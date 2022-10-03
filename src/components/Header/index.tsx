@@ -11,7 +11,7 @@ function classNames(...classes: string[]) {
 const Header = () => {
   const { data: session } = useSession();
   return (
-    <header className="sticky top-0 bg-white">
+    <header className="sticky top-0 bg-white z-10">
       <div className="py-4 px-4 max-w-5xl mx-auto">
         <div className="flex items-center justify-between">
           <Link href="/" passHref>
