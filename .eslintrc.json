@@ -1,4 +1,9 @@
 {
+  "rules": {
+    "semi": ["error", "always"],
+    "jsx-quotes": ["error", "prefer-double"],
+    "no-trailing-spaces": "error"
+  },
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "project": "./tsconfig.json"

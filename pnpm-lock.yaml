@@ -10,6 +10,7 @@ specifiers:
   '@trpc/react': ^9.27.2
   '@trpc/server': ^9.27.2
   '@types/node': 18.0.0
+  '@types/nprogress': ^0.2.0
   '@types/react': 18.0.14
   '@types/react-dom': 18.0.5
   '@typescript-eslint/eslint-plugin': ^5.33.0
@@ -20,6 +21,7 @@ specifiers:
   moment: ^2.29.4
   next: 12.3.1
   next-auth: ~4.10.3
+  nprogress: ^0.2.0
   postcss: ^8.4.17
   prettier: 2.7.1
   prettier-plugin-tailwindcss: ^0.1.13
@@ -41,9 +43,11 @@ dependencies:
   '@trpc/next': 9.27.2_q6zioqap35hgke6xl77szo7ghe
   '@trpc/react': 9.27.2_e7pohnznr4qdgpqc5x4q3pmfcu
   '@trpc/server': 9.27.2
+  '@types/nprogress': 0.2.0
   moment: 2.29.4
   next: 12.3.1_biqbaboplfbrettd7655fr4n2y
   next-auth: 4.10.3_biqbaboplfbrettd7655fr4n2y
+  nprogress: 0.2.0
   react: 18.2.0
   react-dom: 18.2.0_react@18.2.0
   react-query: 3.39.2_biqbaboplfbrettd7655fr4n2y
@@ -394,6 +398,10 @@ packages:
   /@types/node/18.0.0:
     resolution: {integrity: sha512-cHlGmko4gWLVI27cGJntjs/Sj8th9aYwplmZFwmmgYQQvL5NUsgVJG7OddLvNfLqYS31KFN0s3qlaD9qCaxACA==}
     dev: true
+
+  /@types/nprogress/0.2.0:
+    resolution: {integrity: sha512-1cYJrqq9GezNFPsWTZpFut/d4CjpZqA0vhqDUPFWYKF1oIyBz5qnoYMzR+0C/T96t3ebLAC1SSnwrVOm5/j74A==}
+    dev: false
 
   /@types/prop-types/15.7.5:
     resolution: {integrity: sha512-JCB8C6SnDoQf0cNycqd/35A7MjcnK+ZTqE7judS6o7utxUCg6imJg3QK2qzHKszlTjcj2cn+NwMB2i96ubpj7w==}
@@ -1866,6 +1874,10 @@ packages:
     resolution: {integrity: sha512-bdok/XvKII3nUpklnV6P2hxtMNrCboOjAcyBuQnWEhO665FwrSNRxU+AqpsyvO6LgGYPspN+lu5CLtw4jPRKNA==}
     engines: {node: '>=0.10.0'}
     dev: true
+
+  /nprogress/0.2.0:
+    resolution: {integrity: sha512-I19aIingLgR1fmhftnbWWO3dXc0hSxqHQHQb3H8m+K3TnEn/iSeTZZOyvKXWqQESMwuUVnatlCnZdLBZZt2VSA==}
+    dev: false
 
   /oauth/0.9.15:
     resolution: {integrity: sha512-a5ERWK1kh38ExDEfoO6qUHJb32rd7aYmPHuyCu3Fta/cnICvYmgd2uhuKXvPD+PXB+gCEYYEaQdIRAjCOwAKNA==}

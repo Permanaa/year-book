@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { useSession, signIn, signOut } from "next-auth/react"
+import { useSession, signIn, signOut } from "next-auth/react";
 import Image from "next/image";
 import { Menu, Transition } from "@headlessui/react";
 import { Fragment } from "react";
 
 function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
+  return classes.filter(Boolean).join(' ');
 }
 
 const Header = () => {
@@ -41,7 +41,7 @@ const Header = () => {
                     )}
                   </Menu.Button>
                 </div>
-          
+
                 <Transition
                   as={Fragment}
                   enter="transition ease-out duration-100"

@@ -1,11 +1,11 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import { trpc } from "@utils/trpc";
-import Link from "next/link";
 import superjson from "superjson";
 import { createContextInner } from "@server/router/context";
 import { createSSGHelpers } from "@trpc/react/ssg";
 import { appRouter } from "@server/router";
+import ListBox from "@components/ListBox";
 
 const Home: NextPage = () => {
   const { data, isLoading } = trpc.useQuery(["alumni.getAll"]);
@@ -32,6 +32,7 @@ const Home: NextPage = () => {
         <div>
           <div className="px-4 max-w-5xl mx-auto grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
 
+            {/* need to be removed when using SSG (on research) */}
             {isLoading && new Array(3).fill("").map((_, idx) => (
               <div key={idx} className="animate-pulse flex-1 space-y-4 p-4 h-28 rounded-lg bg-slate-100">
                 <div className="h-4 bg-slate-300 rounded"></div>
@@ -40,47 +41,42 @@ const Home: NextPage = () => {
               </div>
             ))}
 
-            {(!isLoading && data) && data.map((item, idx) => (
-              <Link href={`/${item.slug}`} passHref key={idx}>
-                <a>
-                  <div className="relative flex-1 p-4 h-28 rounded-lg bg-slate-100 cursor-pointer hover:bg-red-50">
-                    <p className="text-2xl font-bold text-slate-700">
-                      {`Alumni ${item.generation}`}
-                    </p>
-                    <p className="text-base text-slate-500">
-                      {`${item.school_year} - ${item.graduation_year}`}
-                    </p>
-                    <div className="absolute bottom-3 right-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-slate-400 hover:text-red-500">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                      </svg>
-                    </div>
-                  </div>
-                </a>
-              </Link>
+            {(!isLoading && data) && data.map(item => (
+              <ListBox
+                key={item.id}
+                title={`Alumni ${item.generation}`}
+                subtitle={`${item.school_year} - ${item.graduation_year}`}
+                href={`/${item.slug}`}
+              />
             ))}
 
           </div>
+          {(!isLoading && !data) && (
+            <div className="flex justify-center items-center">
+              <p className="text-slate-500 text-4xl font-bold">404</p>
+            </div>
+          )}
         </div>
       </main>
     </>
   );
 };
 
-export async function getServerSideProps() {
+export async function getStaticProps () {
   const ssg = createSSGHelpers({
     router: appRouter,
     ctx: await createContextInner(),
     transformer: superjson,
   });
 
-  await ssg.prefetchQuery("alumni.getAll");
+  await ssg.fetchQuery("alumni.getAll");
 
   return {
     props: {
       trpcState: ssg.dehydrate(),
-    }
-  }
+    },
+    revalidate: 1,
+  };
 }
 
 export default Home;

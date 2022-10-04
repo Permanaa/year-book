@@ -1,18 +1,14 @@
 import { NextPage } from "next";
 import Head from "next/head";
-import { useRouter } from "next/router";
-import { trpc } from "@utils/trpc";
 import ImageWithFallback from "@components/ImageWithFallback";
 import type { Student } from "@prisma/client";
 import { Dialog, Transition } from "@headlessui/react";
 import { useDisclosure } from "@utils/useDisclosure";
 import { Fragment, useRef } from "react";
 import moment from "moment";
-import superjson from "superjson";
-import { createContextInner } from "@server/router/context";
-import { createSSGHelpers } from "@trpc/react/ssg";
-import { appRouter } from "@server/router";
-import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
+import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
+import { prisma } from "@server/db/client";
+import { serialize } from "superjson";
 
 const PhoneIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
@@ -24,7 +20,7 @@ const AtIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
     <path fillRule="evenodd" d="M5.404 14.596A6.5 6.5 0 1116.5 10a1.25 1.25 0 01-2.5 0 4 4 0 10-.571 2.06A2.75 2.75 0 0018 10a8 8 0 10-2.343 5.657.75.75 0 00-1.06-1.06 6.5 6.5 0 01-9.193 0zM10 7.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z" clipRule="evenodd" />
   </svg>
-)
+);
 
 const StudentItem = (props: Student) => {
   const {
@@ -131,6 +127,7 @@ const StudentItem = (props: Student) => {
                   <div className="grid grid-col-1 sm:grid-cols-3 gap-4">
                     <div>
                       <ImageWithFallback
+                        key={props.id}
                         width={245}
                         height={320}
                         quality={100}
@@ -181,12 +178,7 @@ const StudentItem = (props: Student) => {
 const StudentList: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
   props
 ) => {
-  const { slug } = props
-
-  const { data, isLoading } = trpc.useQuery([
-    "class.getBySlug",
-    { slug }
-  ]);
+  const { data } = props;
 
   return (
     <>
@@ -196,59 +188,57 @@ const StudentList: NextPage<InferGetServerSidePropsType<typeof getServerSideProp
 
       <main className="pb-8">
         <div className="flex justify-center text-center max-w-xs mx-auto my-40 h-3/4 md:my-48 md:max-w-5xl">
-          {isLoading && (
-            <div className="animation-pulse h-8 w-2/3 sm:w-1/2 bg-slate-300 rounded"></div>
-          )}
-          {(!isLoading && data) && (
-            <h1 className="flex flex-col gap-4 text-5xl font-bold text-slate-700 md:text-7xl">
-              {data?.name}
-            </h1>
-          )}
+          <h1 className="flex flex-col gap-4 text-5xl font-bold text-slate-700 md:text-7xl">
+            {data?.name}
+          </h1>
         </div>
 
         <div className="relative px-4 max-w-5xl mx-auto grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {isLoading && new Array(5).fill("").map((_, idx) => (
-            <div key={idx} className="animate-pulse flex-1 flex flex-col justify-center items-center space-y-4">
-              <div className="w-4/5 bg-slate-300 rounded-lg aspect-[3/4]"></div>
-              <div className="h-2 w-7/12 bg-slate-300 rounded"></div>
-              <div className="h-2 w-7/12 bg-slate-300 rounded"></div>
-            </div>
-          ))}
-
-          {(!isLoading && data) && data.student.map(item => (
+          {data && data.student.map((item) => (
             <StudentItem {...item} key={item.id}/>
           ))}
         </div>
+        {!data?.student.length && (
+          <div className="flex justify-center items-center">
+            <p className="text-slate-500 text-4xl font-bold">404</p>
+          </div>
+        )}
       </main>
     </>
   );
 };
 
-export async function getServerSideProps(
+export const getServerSideProps = async (
   context: GetServerSidePropsContext<{ alumni: string, classroom: string }>,
-) {
-  const ssg = createSSGHelpers({
-    router: appRouter,
-    ctx: await createContextInner(),
-    transformer: superjson,
-  });
-
+) => {
   const alumni = context.params?.alumni || "";
   const classroom = context.params?.classroom || "";
 
   const slug =`${alumni}/${classroom}`;
 
-  await ssg.prefetchQuery(
-    "class.getBySlug",
-    { slug }
-  );
+  const studentList = await prisma.class.findUnique({
+    where: {
+      slug,
+    },
+    include: {
+      student: {
+        orderBy: {
+          name: "asc"
+        }
+      }
+    }
+  });
+
+  const { json } = serialize(studentList);
 
   return {
     props: {
-      trpcState: ssg.dehydrate(),
+      data: json as typeof studentList,
+      alumni,
+      classroom,
       slug,
     }
-  }
-}
+  };
+};
 
 export default StudentList;

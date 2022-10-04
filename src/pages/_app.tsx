@@ -9,6 +9,8 @@ import type { AppRouter } from "../server/router";
 import type { Session } from "next-auth";
 import "../styles/globals.css";
 import Header from "@components/Header";
+import NProgress from "@components/NProgress";
+import "../styles/nprogress.css";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -16,6 +18,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
+      <NProgress />
       <Header />
       <Component {...pageProps} />
     </SessionProvider>

@@ -1,26 +1,17 @@
 import type { NextPage } from "next";
 import Head from "next/head";
-import { trpc } from "@utils/trpc";
 import { Tab } from "@headlessui/react";
 import { Fragment } from "react";
-import Link from "next/link";
-import superjson from "superjson";
-import { createContextInner } from "@server/router/context";
-import { createSSGHelpers } from "@trpc/react/ssg";
-import { appRouter } from "@server/router";
-import { GetServerSidePropsContext, InferGetServerSidePropsType } from 'next';
+import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
+import { prisma } from "@server/db/client";
+import ListBox from "@components/ListBox";
 
 const ClassList: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
   props,
 ) => {
-  const { alumni } = props;
+  const { alumni, data: dataMajor } = props;
 
   const alumniTitle = `${alumni.charAt(0).toUpperCase()}${alumni.slice(1).replace("-", " ")}`;
-
-  const { data: dataMajor, isLoading: loadingMajor } = trpc.useQuery([
-    "major.getAllByAlumni",
-    { alumni }
-  ]);
 
   return (
     <>
@@ -38,15 +29,9 @@ const ClassList: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
 
         <div className="max-w-5xl mx-auto px-4">
           <Tab.Group>
+
             <Tab.List className="grid grid-cols-3 my-12 gap-4 bg-red-500 max-w-md mx-auto p-1 h-12 rounded-xl relative">
-
-              {loadingMajor && new Array(3).fill("").map((_, idx) => (
-                <div key={idx} className="animate-pulse h-full flex-1 flex justify-center items-center">
-                  <div className="animation-pulse h-4 bg-slate-200 rounded w-10"></div>
-                </div>
-              ))}
-
-              {(!loadingMajor && dataMajor) && dataMajor.map((major, idx) => (
+              {dataMajor && dataMajor.map((major, idx) => (
                 <Tab as={Fragment} key={idx}>
                   {({ selected }) => (
                     <button
@@ -61,75 +46,60 @@ const ClassList: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
                   )}
                 </Tab>
               ))}
-
             </Tab.List>
 
             <Tab.Panels>
-
-              {loadingMajor && (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                  {new Array(3).fill("").map((_, idx) => (
-                    <div key={idx} className="animate-pulse flex-1 space-y-4 p-4 h-28 rounded-lg bg-slate-100">
-                      <div className="h-4 bg-slate-300 rounded"></div>
-                      <div className="h-2 w-7/12 bg-slate-300 rounded"></div>
-                      <div className="h-2 w-7/12 bg-slate-300 rounded"></div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {(!loadingMajor && dataMajor) && dataMajor.map((major, idx) => (
+              {dataMajor && dataMajor.map((major, idx) => (
                 <Tab.Panel key={idx} className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                  {major.class.map((classroom, keyClass) => (
-                    <Link href={`/${classroom.slug}`} passHref key={keyClass}>
-                      <a>
-                        <div className="relative flex-1 p-4 h-28 rounded-lg bg-slate-100 cursor-pointer hover:bg-red-50">
-                          <p className="text-2xl font-bold text-slate-700">
-                            {classroom.name}
-                          </p>
-                          <div className="absolute bottom-3 right-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6 text-slate-400 hover:text-red-500">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
-                            </svg>
-                          </div>
-                        </div>
-                      </a>
-                    </Link>
+                  {major.class.map(classroom => (
+                    <ListBox
+                      key={classroom.id}
+                      title={classroom.name}
+                      href={`/${classroom.slug}`}
+                    />
                   ))}
                 </Tab.Panel>
               ))}
-
             </Tab.Panels>
-          </Tab.Group>
-        </div>
 
+          </Tab.Group>
+
+          {!dataMajor && (
+            <div className="flex justify-center items-center">
+              <p className="text-slate-500 text-4xl font-bold">404</p>
+            </div>
+          )}
+        </div>
       </main>
     </>
   );
 };
 
-export async function getServerSideProps(
+export const getServerSideProps = async (
   context: GetServerSidePropsContext<{ alumni: string }>,
-) {
-  const ssg = createSSGHelpers({
-    router: appRouter,
-    ctx: await createContextInner(),
-    transformer: superjson,
+) => {
+  const alumni = context.params?.alumni || "";
+  const majorList = await prisma.major.findMany({
+    orderBy: {
+      short_name: "desc"
+    },
+    include:{
+      class: {
+        where: {
+          slug: {
+            contains: alumni
+          }
+        }
+      }
+    },
   });
-
-  const alumni = context.params?.alumni || ""
-
-  await ssg.prefetchQuery(
-    "major.getAllByAlumni",
-    { alumni: alumni ? alumni : "" }
-  );
 
   return {
     props: {
-      trpcState: ssg.dehydrate(),
+      data: majorList,
       alumni,
     }
-  }
-}
+  };
+};
 
 export default ClassList;
