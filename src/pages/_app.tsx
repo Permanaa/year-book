@@ -11,6 +11,7 @@ import "../styles/globals.css";
 import Header from "@components/Header";
 import NProgress from "@components/NProgress";
 import "../styles/nprogress.css";
+import ToastProvider from "@context/toast";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -18,9 +19,11 @@ const MyApp: AppType<{ session: Session | null }> = ({
 }) => {
   return (
     <SessionProvider session={session}>
-      <NProgress />
-      <Header />
-      <Component {...pageProps} />
+      <ToastProvider>
+        <NProgress />
+        <Header />
+        <Component {...pageProps} />
+      </ToastProvider>
     </SessionProvider>
   );
 };
