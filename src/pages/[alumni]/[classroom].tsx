@@ -9,18 +9,7 @@ import moment from "moment";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { prisma } from "@server/db/client";
 import { serialize } from "superjson";
-
-const PhoneIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-    <path fillRule="evenodd" d="M2 3.5A1.5 1.5 0 013.5 2h1.148a1.5 1.5 0 011.465 1.175l.716 3.223a1.5 1.5 0 01-1.052 1.767l-.933.267c-.41.117-.643.555-.48.95a11.542 11.542 0 006.254 6.254c.395.163.833-.07.95-.48l.267-.933a1.5 1.5 0 011.767-1.052l3.223.716A1.5 1.5 0 0118 15.352V16.5a1.5 1.5 0 01-1.5 1.5H15c-1.149 0-2.263-.15-3.326-.43A13.022 13.022 0 012.43 8.326 13.019 13.019 0 012 5V3.5z" clipRule="evenodd" />
-  </svg>
-);
-
-const AtIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-5 h-5">
-    <path fillRule="evenodd" d="M5.404 14.596A6.5 6.5 0 1116.5 10a1.25 1.25 0 01-2.5 0 4 4 0 10-.571 2.06A2.75 2.75 0 0018 10a8 8 0 10-2.343 5.657.75.75 0 00-1.06-1.06 6.5 6.5 0 01-9.193 0zM10 7.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z" clipRule="evenodd" />
-  </svg>
-);
+import LeadForm from "@components/LeadForm";
 
 const StudentItem = (props: Student) => {
   const {
@@ -49,8 +38,8 @@ const StudentItem = (props: Student) => {
   ];
 
   const contacts = [
-    { icon: <PhoneIcon />, value: whatsapp },
-    { icon: <AtIcon />, value: instagram },
+    { label: "WA", value: whatsapp },
+    { label: "IG", value: instagram },
   ];
 
   return (
@@ -110,7 +99,7 @@ const StudentItem = (props: Student) => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="overflow-y-auto h-full w-full sm:rounded-lg bg-white p-4 sm:h-auto sm:max-w-2xl sm:w-full sm:m-4">
+                <Dialog.Panel className="overflow-y-auto h-full w-full sm:rounded-lg bg-white p-4 sm:h-auto sm:max-w-xl sm:w-full sm:m-4">
 
                   <Dialog.Title className="relative">
                     <div
@@ -124,8 +113,8 @@ const StudentItem = (props: Student) => {
                     </div>
                   </Dialog.Title>
 
-                  <div className="grid grid-col-1 sm:grid-cols-3 gap-4">
-                    <div>
+                  <div className="grid grid-col-1 gap-4 sm:grid-cols-9 sm:gap-4">
+                    <div className="col-span-4">
                       <ImageWithFallback
                         key={props.id}
                         width={245}
@@ -138,7 +127,7 @@ const StudentItem = (props: Student) => {
                         className="rounded-lg"
                       />
                     </div>
-                    <div className="flex flex-col w-full col-span-2">
+                    <div className="flex flex-col w-full col-span-5">
                       {infoDisplay.map((info, idx) => (
                         <div key={idx} className="mb-4">
                           <p className="text-slate-700 font-bold text-sm">{info.label}</p>
@@ -149,9 +138,9 @@ const StudentItem = (props: Student) => {
                       <div className="mb-4">
                         <p className="text-slate-700 font-bold text-sm mb-2">Kontak</p>
                         {contacts.map((contact, idx) => (
-                          <div key={idx} className="flex items-center gap-2 text-slate-500 mb-1">
-                            {contact.icon}
-                            <p className="text-slate-500 text-base">{contact?.value || "-"}</p>
+                          <div key={idx} className="grid grid-cols-7">
+                            <p className="text-slate-500 text-base font-medium col-span-1">{contact.label || "-"}</p>
+                            <p className="text-slate-500 text-base col-span-6">{contact.value || "-"}</p>
                           </div>
                         ))}
                       </div>
@@ -184,6 +173,7 @@ const StudentList: NextPage<InferGetServerSidePropsType<typeof getServerSideProp
     <>
       <Head>
         <title>{data?.name}</title>
+        <meta name="description" content="Year book alumni dari SMK Telkom Purwokerto" />
       </Head>
 
       <main className="pb-8">
@@ -194,7 +184,7 @@ const StudentList: NextPage<InferGetServerSidePropsType<typeof getServerSideProp
         </div>
 
         <div className="relative px-4 max-w-5xl mx-auto grid grid-cols-2 gap-x-4 gap-y-6 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
-          {data && data.student.map((item) => (
+          {!!data && data.student.map((item) => (
             <StudentItem {...item} key={item.id}/>
           ))}
         </div>
@@ -203,6 +193,10 @@ const StudentList: NextPage<InferGetServerSidePropsType<typeof getServerSideProp
             <p className="text-slate-500 text-4xl font-bold">404</p>
           </div>
         )}
+
+        <footer className="max-w-5xl mx-auto mt-24 p-4">
+          <LeadForm href="/form/mantan" title="Bantu kami melengkapi data alumni." />
+        </footer>
       </main>
     </>
   );
@@ -224,6 +218,9 @@ export const getServerSideProps = async (
       student: {
         orderBy: {
           name: "asc"
+        },
+        where: {
+          status: "PUBLISHED"
         }
       }
     }

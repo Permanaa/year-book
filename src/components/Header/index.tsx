@@ -62,7 +62,7 @@ const Header = () => {
                               'block w-full px-4 py-2 text-left text-sm'
                             )}
                           >
-                            Sign out
+                            Keluar
                           </button>
                         )}
                       </Menu.Item>

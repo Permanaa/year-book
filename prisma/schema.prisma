@@ -55,6 +55,9 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
+    createAlumni  Alumni[]
+    createClass   Class[]
+    createStudent Student[]
 }
 
 model VerificationToken {
@@ -71,8 +74,13 @@ model Alumni {
     graduation_year String
     school_year     String
     slug            String      @unique
+    status          Status      @default(SUBMITTED)
     class           Class[]
     student         Student[]
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    createdBy       String
+    user            User        @relation(fields: [createdBy], references: [id], onDelete: Cascade)
 }
 
 model Major {
@@ -87,11 +95,16 @@ model Class {
     id              String      @id @default(cuid())
     name            String
     slug            String      @unique
+    status          Status      @default(SUBMITTED)
     majorId         String
     alumniId        String
     major           Major       @relation(fields: [majorId], references: [id], onDelete: Cascade)
     alumni          Alumni      @relation(fields: [alumniId], references: [id], onDelete: Cascade)
     student         Student[]
+    createdAt       DateTime    @default(now())
+    updatedAt       DateTime    @updatedAt
+    createdBy       String
+    user            User        @relation(fields: [createdBy], references: [id], onDelete: Cascade)
 }
 
 model Student {
@@ -106,10 +119,18 @@ model Student {
     whatsapp        String?
     createdAt       DateTime    @default(now())
     updatedAt       DateTime    @updatedAt
+    status          Status      @default(SUBMITTED)
     alumniId        String
     majorId         String
     classId         String
+    createdBy       String
     alumni          Alumni      @relation(fields: [alumniId], references: [id], onDelete: Cascade)
     major           Major       @relation(fields: [majorId], references: [id], onDelete: Cascade)
     class           Class       @relation(fields: [classId], references: [id], onDelete: Cascade)
+    user            User        @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+}
+
+enum Status {
+    SUBMITTED
+    PUBLISHED
 }

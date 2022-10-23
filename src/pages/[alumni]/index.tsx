@@ -5,11 +5,12 @@ import { Fragment } from "react";
 import { GetServerSidePropsContext, InferGetServerSidePropsType } from "next";
 import { prisma } from "@server/db/client";
 import ListBox from "@components/ListBox";
+import LeadForm from "@components/LeadForm";
 
 const ClassList: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>> = (
   props,
 ) => {
-  const { alumni, data: dataMajor } = props;
+  const { alumni, data } = props;
 
   const alumniTitle = `${alumni.charAt(0).toUpperCase()}${alumni.slice(1).replace("-", " ")}`;
 
@@ -17,6 +18,7 @@ const ClassList: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
     <>
       <Head>
         <title>{alumni && alumniTitle}</title>
+        <meta name="description" content="Year book alumni dari SMK Telkom Purwokerto" />
       </Head>
 
       <main className="pb-8">
@@ -31,7 +33,7 @@ const ClassList: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
           <Tab.Group>
 
             <Tab.List className="grid grid-cols-3 my-12 gap-4 bg-red-500 max-w-md mx-auto p-1 h-12 rounded-xl relative">
-              {dataMajor && dataMajor.map((major, idx) => (
+              {!!data.length && data.map((major, idx) => (
                 <Tab as={Fragment} key={idx}>
                   {({ selected }) => (
                     <button
@@ -49,27 +51,41 @@ const ClassList: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
             </Tab.List>
 
             <Tab.Panels>
-              {dataMajor && dataMajor.map((major, idx) => (
-                <Tab.Panel key={idx} className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-                  {major.class.map(classroom => (
-                    <ListBox
-                      key={classroom.id}
-                      title={classroom.name}
-                      href={`/${classroom.slug}`}
-                    />
-                  ))}
-                </Tab.Panel>
-              ))}
+              {!!data.length && data.map((major, idx) => {
+                if (major.class.length) {
+                  return (
+                    <Tab.Panel key={idx} className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+                      {!major.class.length && (
+                        <div className="flex justify-center items-center">
+                          <p className="text-slate-500 text-4xl font-bold">404</p>
+                        </div>
+                      )}
+                      {major.class.map(classroom => (
+                        <ListBox
+                          key={classroom.id}
+                          title={classroom.name}
+                          href={`/${classroom.slug}`}
+                        />
+                      ))}
+                    </Tab.Panel>
+                  );
+                } else {
+                  return (
+                    <Tab.Panel className="flex justify-center items-center" key={idx}>
+                      <p className="text-slate-500 text-4xl font-bold">404</p>
+                    </Tab.Panel>
+                  );
+                }
+              }
+              )}
             </Tab.Panels>
 
           </Tab.Group>
-
-          {!dataMajor && (
-            <div className="flex justify-center items-center">
-              <p className="text-slate-500 text-4xl font-bold">404</p>
-            </div>
-          )}
         </div>
+
+        <footer className="max-w-5xl mx-auto mt-24 p-4">
+          <LeadForm href="/form/kelas" title="Kelas mu belum tertera?" />
+        </footer>
       </main>
     </>
   );
@@ -88,7 +104,8 @@ export const getServerSideProps = async (
         where: {
           slug: {
             contains: alumni
-          }
+          },
+          status: "PUBLISHED"
         }
       }
     },

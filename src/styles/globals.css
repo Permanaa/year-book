@@ -6,4 +6,8 @@
   .btn {
     @apply text-white bg-red-500 hover:bg-gradient-to-bl focus:ring-4 focus:outline-none focus:ring-red-200 font-bold rounded-lg text-base px-5 py-2.5 text-center;
   }
+
+  .input {
+    @apply block w-full text-slate-600 rounded-md border-gray-300 focus:ring-red-200 focus:ring-2 focus:border-red-300 sm:text-base placeholder:text-slate-300
+  }
 }

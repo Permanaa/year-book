@@ -6,6 +6,7 @@ import { createContextInner } from "@server/router/context";
 import { createSSGHelpers } from "@trpc/react/ssg";
 import { appRouter } from "@server/router";
 import ListBox from "@components/ListBox";
+import LeadForm from "@components/LeadForm";
 
 const Home: NextPage = () => {
   const { data, isLoading } = trpc.useQuery(["alumni.getAll"]);
@@ -23,9 +24,9 @@ const Home: NextPage = () => {
         <div className="flex justify-center text-center max-w-xs mx-auto my-40 h-3/4 md:my-48 md:max-w-5xl">
           <h1 className="flex flex-col gap-4 text-5xl font-bold text-slate-700 md:text-7xl">
             Alumni<br />
-            <span className="text-red-500">
+            {/* <span className="text-red-500">
               SMK Telkom Purwokerto
-            </span>
+            </span> */}
           </h1>
         </div>
 
@@ -41,7 +42,7 @@ const Home: NextPage = () => {
               </div>
             ))}
 
-            {(!isLoading && data) && data.map(item => (
+            {(!isLoading && !!data?.length) && data.map(item => (
               <ListBox
                 key={item.id}
                 title={`Alumni ${item.generation}`}
@@ -51,12 +52,16 @@ const Home: NextPage = () => {
             ))}
 
           </div>
-          {(!isLoading && !data) && (
+          {(!isLoading && !data?.length) && (
             <div className="flex justify-center items-center">
               <p className="text-slate-500 text-4xl font-bold">404</p>
             </div>
           )}
         </div>
+
+        <footer className="max-w-5xl mx-auto mt-24 p-4">
+          <LeadForm href="/form/alumni" title="Alumni mu belum tertera?" />
+        </footer>
       </main>
     </>
   );
