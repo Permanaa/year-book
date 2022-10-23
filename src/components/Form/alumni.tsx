@@ -2,7 +2,6 @@ import moment from "moment";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { trpc } from "@utils/trpc";
 import { useToast } from "@context/toast";
-import { useEffect } from "react";
 import { useRouter } from "next/router";
 
 export type AlumniForm = {
